@@ -118,7 +118,7 @@ def make_chapter(i):
         tqdm.write(Fore.RED + f"[+] ERROR: Chapter {i+1} is empty!")
         content = "<p>No content available</p>"
     chapter = epub.EpubHtml(title=title, file_name=f"chapter{i+1}.xhtml")
-    chapter.content = content
+    chapter.content = f'<h2>{title}</h2>'+content
     return chapter
 
 
