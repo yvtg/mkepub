@@ -22,6 +22,40 @@ BANNER = """
 """
 
 # region crawl
+
+def get_chapter_link(url: str, lst_num: int) -> list:
+    
+    url_list = []
+    
+    for i in range(1, lst_num+1):
+        
+        url1 = f'{url}trang-{i}/#list-chapter'
+        res = requests.get(url1)
+        
+        tqdm.write(Fore.CYAN + f"[+] Fetch {url1}")
+        
+        if res.status_code != 200:
+            break 
+        
+        soup = BeautifulSoup(res.content, 'html.parser')
+        src = soup.find_all('ul', class_="list-chapter")
+        
+        if not src:
+            break
+        
+        soup = BeautifulSoup(str(src), 'html.parser')
+        links = soup.find_all('a')
+        
+        if not links:  
+            break
+        
+        for link in links:
+            href = link['href']
+            if href:
+                url_list.append(href)
+        
+    return url_list
+
 def get_content(url):
     global CHAPTER_TITLES
     global BOOKS
@@ -73,24 +107,13 @@ def get_author(url):
         print(Fore.GREEN + "[+] VALID URL: https://truyenfull.bio/ten-truyen/")
         sys.exit(1)
 
-def make_dict(url):
-    i=1
-    while True:
-        url1 = url+f'chuong-{i}'
-        try: 
-            res = requests.get(url1)
-            soup = BeautifulSoup(res.content, 'html.parser')
-            chapter_title = soup.find('a', class_="chapter-title")
-            stt_code = res.status_code
-            i+=1
-        except requests.RequestException:
-            sys.exit(1)
-        if stt_code != 200 or not chapter_title:
-            break
-        tqdm.write(Fore.CYAN + f"[+] Fetching: {url1}")
-        get_content(url=url1)
-        
+def make_dict(url, lst_num):
+    links = get_chapter_link(url, lst_num)
     
+    for link in links:
+        tqdm.write(Fore.CYAN + f"[+] Fetch {link}")
+        get_content(link)
+        
 def get_cover_img(url):
     global IMG_PATH
     
@@ -134,6 +157,8 @@ def make_epub(url):
     cover_image_path = "test.jpg"  # Ensure the image exists in this path
     if os.path.exists(cover_image_path):
         book.set_cover("cover.jpg", open(cover_image_path, 'rb').read())
+    else:
+        tqdm.write(Fore.RED + f"[+] ERROR: Cover image '{cover_image_path}' not found.")
     
     # tao chuong
     total_chapter = len(BOOKS)
@@ -155,9 +180,6 @@ def make_epub(url):
         book.add_item(epub.EpubNcx())
         book.add_item(epub.EpubNav())
     
-    else:
-        tqdm.write(Fore.RED + f"[+] ERROR: Cover image '{cover_image_path}' not found.")
-    
     # save epub
     output_dir = 'books'  # Replace with your desired folder name or path
 
@@ -171,12 +193,12 @@ def make_epub(url):
     epub.write_epub(output_file_path, book) 
 # endregion
 
-def main(url):
+def main(url, lst_num):
     # get info
     get_book_title(url)
     get_cover_img(url)
     get_author(url)
-    make_dict(url)
+    make_dict(url,lst_num)
     
     # make epub
     make_epub(url)
@@ -185,10 +207,11 @@ def main(url):
 if __name__=="__main__":
     init(autoreset=True)
     print(Fore.MAGENTA + BANNER,end="")
-    if len(sys.argv)<2:
-        print(Fore.RED + "[+] Usage: mkepub.py <url>")
+    if len(sys.argv)<3:
+        print(Fore.RED + "[+] Usage: mkepub.py <url> <list_chapter_number>")
         sys.exit(1)
     url = sys.argv[1].strip()
+    lst_num = int(sys.argv[2].strip())
 
-    main(url)
+    main(url, lst_num)
     os.remove("test.jpg")
