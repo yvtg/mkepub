@@ -1,11 +1,11 @@
 import sys
 import os
-import re
-import requests
-from bs4 import BeautifulSoup
-from ebooklib import epub
+import re 
+import requests 
+from bs4 import BeautifulSoup 
+from ebooklib import epub 
 from tqdm import tqdm
-from colorama import Fore, init
+from colorama import Fore, init 
 
 BOOKS = {}
 CHAPTER_TITLES = []
