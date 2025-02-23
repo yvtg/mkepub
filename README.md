@@ -5,7 +5,7 @@ This is a python script that crawl books from truyenfull then convert to epub fi
 ### Prerequisites
 - python 3.8+
 - pip installed
-### Install from source
+### Install 
 - clone this repo
 ```bash
 git clone https://github.com/yvtg/mkepub.git
@@ -16,7 +16,7 @@ cd mkepub
 pip install -r requirements.txt
 ```
 ## Usage
-```
+```bash
 python mkepub.py <link> <list_chapter_number>
 ```
 
